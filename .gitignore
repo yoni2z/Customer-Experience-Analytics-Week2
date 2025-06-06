@@ -2,6 +2,7 @@
 __pycache__/
 *.db
 *.pyc
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
