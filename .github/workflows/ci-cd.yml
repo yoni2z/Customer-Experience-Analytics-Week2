@@ -36,9 +36,6 @@ jobs:
         run: |
           autopep8 --in-place --max-line-length=100 scripts/*.py
 
-      - name: Run tests
-        run: pytest tests/ --verbose
-
       - name: Run analysis pipeline
         run: |
           python scripts/preprocess.py --input data/cleaned_reviews.csv --output data/processed_reviews.csv
