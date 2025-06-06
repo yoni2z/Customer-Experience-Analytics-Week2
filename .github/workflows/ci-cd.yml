@@ -35,26 +35,3 @@ jobs:
       - name: Auto-fix linting issues
         run: |
           autopep8 --in-place --max-line-length=100 scripts/*.py
-
-      - name: Run analysis pipeline
-        run: |
-          python scripts/preprocess.py --input data/cleaned_reviews.csv --output data/processed_reviews.csv
-          python scripts/sentiment.py --input data/processed_reviews.csv --output data/sentiment_results.csv
-          python scripts/thematic.py --input data/processed_reviews.csv --output data/thematic_results.csv
-          python scripts/database.py --input data/sentiment_results.csv --thematic data/thematic_results.csv --db data/database.sqlite
-          python scripts/visualize.py --input data/sentiment_results.csv --thematic data/thematic_results.csv --output reports/analysis_report.pdf
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: analysis-artifacts
-          path: |
-            data/processed_reviews.csv
-            data/sentiment_results.csv
-            data/thematic_results.csv
-            data/database.sqlite
-            reports/analysis_report.pdf
-            scraper.log
-          if-no-files-found: warn
-          retention-days: 7
