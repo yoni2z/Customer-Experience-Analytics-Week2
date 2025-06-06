@@ -14,64 +14,42 @@ on:
 jobs:
   ci-cd-pipeline:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      issues: write
 
     steps:
-      # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12.6'
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt flake8 pytest
 
-      # Run linting with flake8
       - name: Lint code
-        run: |
-          pip install flake8
-          flake8 scripts/ --max-line-length=100
+        run: flake8 scripts/ --max-line-length=100
 
-      # Run unit tests with pytest
       - name: Run tests
-        run: |
-          pip install pytest
-          pytest tests/ --verbose
+        run: pytest tests/ --verbose
 
-      # Run preprocessing
-      - name: Preprocess data
+      - name: Run analysis pipeline
         run: |
           python scripts/preprocess.py --input data/cleaned_reviews.csv --output data/processed_reviews.csv
-
-      # Run sentiment analysis
-      - name: Run sentiment analysis
-        run: |
           python scripts/sentiment.py --input data/processed_reviews.csv --output data/sentiment_results.csv
-
-      # Run thematic analysis
-      - name: Run thematic analysis
-        run: |
           python scripts/thematic.py --input data/processed_reviews.csv --output data/thematic_results.csv
-
-      # Run database operations
-      - name: Run database operations
-        run: |
           python scripts/database.py --input data/sentiment_results.csv --thematic data/thematic_results.csv --db data/database.sqlite
-
-      # Generate visualizations and reports
-      - name: Generate visualizations
-        run: |
           python scripts/visualize.py --input data/sentiment_results.csv --thematic data/thematic_results.csv --output reports/analysis_report.pdf
 
-      # Upload artifacts
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: analysis-artifacts
           path: |
@@ -81,19 +59,5 @@ jobs:
             data/database.sqlite
             reports/analysis_report.pdf
             scraper.log
-
-      # Notify on failure
-      - name: Notify on failure
-        if: failure()
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { context } = require('@actions/github');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: 'CI/CD pipeline failed. Please check the logs.'
-            });
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if-no-files-found: warn
+          retention-days: 7
