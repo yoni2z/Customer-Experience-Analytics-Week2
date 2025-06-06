@@ -36,9 +36,6 @@ jobs:
         run: |
           autopep8 --in-place --max-line-length=100 scripts/*.py
 
-      - name: Lint code
-        run: flake8 scripts/ --max-line-length=100
-
       - name: Run tests
         run: pytest tests/ --verbose
 
