@@ -35,3 +35,7 @@ jobs:
       - name: Auto-fix linting issues
         run: |
           autopep8 --in-place --max-line-length=100 scripts/*.py
+
+      - name: Validate SQL syntax for Task 3
+        run: |
+          python -c "import sqlparse; import re; with open('scripts/database.py', 'r') as f: content = f.read(); sqls = re.findall(r'cursor\.execute\(\s*\"\"\".*?\"\"\"\s*\)', content, re.DOTALL); valid = all(sqlparse.parse(sql) for sql in [re.sub(r'cursor\.execute\(\s*\"\"\"|\"\"\"\s*\)', '', s) for s in sqls]); print('SQL syntax check passed' if valid else 'SQL syntax error'); exit(0 if valid else 1)"
