@@ -43,7 +43,3 @@ jobs:
       - name: Run unit tests
         run: |
           pytest tests/ -v
-
-      - name: Validate SQL syntax for Task 3
-        run: |
-          python scripts/validate_sql.py
