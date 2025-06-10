@@ -25,17 +25,25 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12.6"
+          python-version: '3.12.6'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt flake8 pytest autopep8
+          pip install -r requirements.txt flake8 pytest autopep8 oracledb pandas python-dotenv sqlparse
 
       - name: Auto-fix linting issues
         run: |
           autopep8 --in-place --max-line-length=100 scripts/*.py
 
+      - name: Lint code with flake8
+        run: |
+          flake8 scripts/*.py --max-line-length=100 --extend-ignore=E203
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v
+
       - name: Validate SQL syntax for Task 3
         run: |
-          python -c "import sqlparse, re; with open('scripts/database.py', 'r') as f: content = f.read(); sqls = re.findall(r'cursor\.execute\(\s*\"\"\".*?\"\"\"\s*\)', content, re.DOTALL); valid = all(sqlparse.parse(sql.strip()) for sql in [re.sub(r'cursor\.execute\(\s*\"\"\"|\"\"\"\s*\)', '', s) for s in sqls]); print('SQL syntax check passed' if valid else 'SQL syntax error'); exit(0 if valid else 1)"
+          python scripts/validate_sql.py
